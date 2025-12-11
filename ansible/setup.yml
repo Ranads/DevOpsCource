@@ -1,0 +1,61 @@
+- name: Configure Azure VMs with Dev Tools
+  hosts: all_servers
+  become: yes
+  tasks:
+    - name: Update apt packages
+      ansible.builtin.apt:
+        update_cache: yes
+        force_apt_get: yes
+
+    - name: Install Git
+      ansible.builtin.apt:
+        name: git
+        state: present
+
+    - name: Install Python3 and pip
+      ansible.builtin.apt:
+        name:
+          - python3
+          - python3-pip
+        state: present
+
+    - name: Install Docker
+      ansible.builtin.apt:
+        name: docker.io
+        state: present
+
+    - name: Enable and start Docker service
+      ansible.builtin.systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Stop and remove any container in port 8080
+      shell: "docker ps --filter 'publish=8080' --format '{% raw %}{{.ID}}{% endraw %}' | xargs -r docker rm -f"
+      ignore_errors: yes
+
+    - name: Remove existing flaskapp container if present
+      shell: "docker rm -f flaskapp"
+      ignore_errors: yes
+
+    - name: Copy Flask app files
+      copy:
+        src: ../app/
+        dest: /home/{{ ansible_user }}/app/
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: 0755
+
+    - name: Build Flask Docker image
+      command: docker build -t flaskapp /home/{{ ansible_user }}/app/
+
+    - name: Run Flask container
+      command: "docker run -d --restart=always --name flaskapp -p 8080:80 flaskapp"
+
+    - name: Show running containers
+      command: docker ps
+      register: docker_ps_output
+
+    - name: Display docker ps output
+      debug:
+        var: docker_ps_output.stdout_lines

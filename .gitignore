@@ -1,0 +1,31 @@
+# 🔒 Secrets and SSH keys
+*.pem
+*.key
+*.crt
+*.pub
+azure_vm_key
+
+# 🛠 Terraform state and provider binaries
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+# 🐍 Python virtual environment
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pytest_cache/
+
+# 🐳 Docker artifacts (optional)
+*.log
+
+# 🧠 IDE/editor configs
+.vscode/
+.idea/
+
+# 🖥 System files
+.DS_Store
+Thumbs.db
